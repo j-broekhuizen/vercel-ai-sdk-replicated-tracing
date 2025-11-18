@@ -42,7 +42,7 @@ const wrappedAISDK = wrapAISDK(
 
 const handleAgentRequest = traceable(
   async (messages: any[]) => {
-    const conversation = [
+    let conversation: any[] = [
       { role: "system", content: MAIN_AGENT_SYSTEM_PROMPT },
       ...(messages ?? []),
     ];
@@ -52,6 +52,62 @@ const handleAgentRequest = traceable(
       messages: conversation,
       tools,
     });
+
+    // If tool was called but no text generated, continue with tool results
+    if (result.finishReason === "tool-calls" && !result.text && result.toolCalls && result.toolResults) {
+      // Use the response messages which are already in the correct ModelMessage format
+      const responseMessages = result.response?.messages;
+      if (responseMessages && Array.isArray(responseMessages)) {
+        // The response messages should already include assistant message with tool calls
+        // and tool result messages, so we can use them directly
+        const continuedResult = await wrappedAISDK.generateText({
+          model: openai("gpt-4o"),
+          messages: responseMessages as any,
+          tools,
+        });
+
+        return {
+          text: continuedResult.text || result.text || "",
+          toolCalls: result.toolCalls,
+          toolResults: result.toolResults,
+          finishReason: continuedResult.finishReason || result.finishReason,
+        };
+      }
+
+      // Fallback: construct messages manually if response.messages not available
+      // This should rarely happen, but handle it just in case
+      const messages: any[] = [...conversation];
+
+      // Add assistant message with tool calls (simplified format)
+      messages.push({
+        role: "assistant",
+        content: result.text || "",
+        toolCalls: result.toolCalls,
+      });
+
+      // Add tool results
+      for (const toolResult of result.toolResults) {
+        const resultValue = "result" in toolResult ? toolResult.result : toolResult;
+        messages.push({
+          role: "tool",
+          toolCallId: toolResult.toolCallId,
+          content: typeof resultValue === "string" ? resultValue : JSON.stringify(resultValue),
+        });
+      }
+
+      const continuedResult = await wrappedAISDK.generateText({
+        model: openai("gpt-4o"),
+        messages,
+        tools,
+      });
+
+      return {
+        text: continuedResult.text || result.text || "",
+        toolCalls: result.toolCalls,
+        toolResults: result.toolResults,
+        finishReason: continuedResult.finishReason || result.finishReason,
+      };
+    }
 
     return {
       text: result.text,

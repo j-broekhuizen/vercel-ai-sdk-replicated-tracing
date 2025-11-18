@@ -92,29 +92,70 @@ const wrappedAISDK = wrapAISDK(
   }
 );
 
-const buildPromptFromFilters = ({ company }: SalesAgentInput) => {
-  const parts = ["Create a sales pipeline summary using the data tool."];
-  if (company) {
-    parts.push(`Company focus: ${company}.`);
-  } else {
-    parts.push("Company focus: not specified.");
-  }
-  parts.push(
-    "Use the lookupSalesData tool once with the requested filters, then craft your answer."
-  );
-  return parts.join("\n");
-};
-
 export const salesAgent = traceable(
   async ({ company }: SalesAgentInput = {}) => {
+    const prompt = company 
+      ? `Get sales pipeline information for ${company}`
+      : "Get sales pipeline information";
+
     const result = await wrappedAISDK.generateText({
       model: openai("gpt-4o-mini"),
       system: SALES_AGENT_SYSTEM_PROMPT,
-      prompt: buildPromptFromFilters({ company }),
+      prompt,
       tools: salesTools,
     });
 
-    return result.text;
+    // generateText should automatically continue after tool calls
+    // If it doesn't, check finishReason and continue manually
+    if (result.finishReason === "tool-calls" && !result.text && result.toolCalls && result.toolResults) {
+      // Use the response messages which are already in the correct ModelMessage format
+      const responseMessages = result.response?.messages;
+      if (responseMessages && Array.isArray(responseMessages)) {
+        // The response messages should already include assistant message with tool calls
+        // and tool result messages, so we can use them directly
+        const continuedResult = await wrappedAISDK.generateText({
+          model: openai("gpt-4o-mini"),
+          messages: responseMessages as any,
+          tools: salesTools,
+        });
+
+        return continuedResult.text || "";
+      }
+
+      // Fallback: construct messages manually if response.messages not available
+      // This should rarely happen, but handle it just in case
+      const messages: any[] = [
+        { role: "system", content: SALES_AGENT_SYSTEM_PROMPT },
+        { role: "user", content: prompt },
+      ];
+
+      // Add assistant message with tool calls (simplified format)
+      messages.push({
+        role: "assistant",
+        content: "",
+        toolCalls: result.toolCalls,
+      });
+
+      // Add tool results
+      for (const toolResult of result.toolResults) {
+        const resultValue = "result" in toolResult ? toolResult.result : toolResult;
+        messages.push({
+          role: "tool",
+          toolCallId: toolResult.toolCallId,
+          content: typeof resultValue === "string" ? resultValue : JSON.stringify(resultValue),
+        });
+      }
+
+      const continuedResult = await wrappedAISDK.generateText({
+        model: openai("gpt-4o-mini"),
+        messages,
+        tools: salesTools,
+      });
+
+      return continuedResult.text || "";
+    }
+
+    return result.text || "";
   },
   {
     name: "sales_agent",
