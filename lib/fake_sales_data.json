@@ -1,0 +1,27 @@
+[
+  {
+    "company_name": "Apple",
+    "description": "Exploring an enterprise licensing agreement for Apple Intelligence services across the retail team.",
+    "deal_stage": "prospecting"
+  },
+  {
+    "company_name": "Microsoft",
+    "description": "Evaluating joint go-to-market motion for Azure OpenAI integrations in productivity SKUs.",
+    "deal_stage": "qualified"
+  },
+  {
+    "company_name": "Netflix",
+    "description": "Proposal for audience analytics copilots supporting content programming decisions.",
+    "deal_stage": "proposal"
+  },
+  {
+    "company_name": "Tesla",
+    "description": "Negotiating multi-year contract to embed AI support tools in service centers worldwide.",
+    "deal_stage": "negotiation"
+  },
+  {
+    "company_name": "Amazon",
+    "description": "Pilot closed for integrating AI-assisted merchandising insights into Amazon Fashion.",
+    "deal_stage": "closed"
+  }
+]

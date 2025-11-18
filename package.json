@@ -1,0 +1,27 @@
+{
+  "name": "my-agent",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^2.0.68",
+    "ai": "^5.0.93",
+    "langsmith": "^0.3.79",
+    "next": "latest",
+    "openai": "^6.9.1",
+    "react": "latest",
+    "react-dom": "latest",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "typescript": "latest"
+  }
+}
