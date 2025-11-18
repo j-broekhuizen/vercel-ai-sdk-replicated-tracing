@@ -34,9 +34,6 @@ const wrappedAISDK = wrapAISDK(
     streamText,
     streamObject,
     generateObject,
-  },
-  {
-    project_name: "vercel-ai-agent-demo",
   }
 );
 
@@ -120,6 +117,7 @@ const handleAgentRequest = traceable(
     name: "main_agent",
     run_type: "chain",
     client: langsmithClient,
+    project_name: "vercel-ai-agent-demo",
   }
 );
 

@@ -22,10 +22,6 @@ const wrappedAISDK = wrapAISDK(
     streamText,
     streamObject,
     generateObject,
-  },
-  {
-    project_name: "vercel-ai-agent-demo",
-    replicas: researchReplicas,
   }
 );
 
@@ -47,10 +43,11 @@ export const researchAgent = traceable(
 
     return result.text;
   },
-  {
-    name: "research_agent",
+  { 
+    name: "research_agent", 
     run_type: "llm",
     client: langsmithClient,
+    project_name: "vercel-ai-agent-demo",
     replicas: researchReplicas
   }
 );

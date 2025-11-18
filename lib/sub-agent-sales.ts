@@ -85,10 +85,6 @@ const wrappedAISDK = wrapAISDK(
     streamText,
     streamObject,
     generateObject,
-  },
-  {
-    project_name: "vercel-ai-agent-demo",
-    replicas: salesReplicas,
   }
 );
 
