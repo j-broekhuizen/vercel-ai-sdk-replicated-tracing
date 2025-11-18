@@ -90,7 +90,7 @@ const wrappedAISDK = wrapAISDK(
 
 export const salesAgent = traceable(
   async ({ company }: SalesAgentInput = {}) => {
-    const prompt = company 
+    const prompt = company
       ? `Get sales pipeline information for ${company}`
       : "Get sales pipeline information";
 
